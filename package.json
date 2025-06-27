@@ -1,0 +1,27 @@
+{
+  "name": "simple-defi-yield-farm",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jorge210488/simple-defi-yield-farm.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jorge210488/simple-defi-yield-farm/issues"
+  },
+  "homepage": "https://github.com/jorge210488/simple-defi-yield-farm#readme",
+  "description": "",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^6.0.0",
+    "hardhat": "^2.25.0"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.3.0"
+  }
+}
