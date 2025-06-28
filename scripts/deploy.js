@@ -1,38 +1,35 @@
-const hre = require("hardhat");
+const { ethers } = require("hardhat");
 
 async function main() {
-  const formatEther = hre.ethers.formatEther;
-  const [deployer] = await hre.ethers.getSigners();
+  const [deployer] = await ethers.getSigners();
+  console.log("Desplegando contratos con la cuenta:", deployer.address);
 
-  console.log("🔨 Desplegando contratos con la cuenta:", deployer.address);
-  const balance = await hre.ethers.provider.getBalance(deployer.address);
-  console.log("💰 Balance del deployer:", formatEther(balance));
+  const DAppToken = await ethers.getContractFactory("DAppToken");
+  const dappToken = await DAppToken.deploy(deployer.address);
+  console.log("DAppToken desplegado en:", await dappToken.getAddress());
 
-  const DappTokenFactory = await hre.ethers.getContractFactory("DAppToken");
-  const dappToken = await DappTokenFactory.deploy(deployer.address);
-  console.log("✅ DAppToken desplegado en:", await dappToken.getAddress());
+  const LPToken = await ethers.getContractFactory("LPToken");
+  const lpToken = await LPToken.deploy(deployer.address);
+  console.log("LPToken desplegado en:", await lpToken.getAddress());
 
-  const LPTokenFactory = await hre.ethers.getContractFactory("LPToken");
-  const lpToken = await LPTokenFactory.deploy(deployer.address);
-  console.log("✅ LPToken desplegado en:", await lpToken.getAddress());
+  const initialRate = ethers.parseUnits("1", 18); // ← parseUnits nativo de viem o hardhat@6
 
-  const TokenFarmFactory = await hre.ethers.getContractFactory("TokenFarm");
-  const tokenFarm = await TokenFarmFactory.deploy(
+  const TokenFarm = await ethers.getContractFactory("TokenFarm");
+  const tokenFarm = await TokenFarm.deploy(
     await dappToken.getAddress(),
-    await lpToken.getAddress()
+    await lpToken.getAddress(),
+    initialRate
   );
-  console.log("✅ TokenFarm desplegado en:", await tokenFarm.getAddress());
+  console.log("TokenFarm desplegado en:", await tokenFarm.getAddress());
 
   const transferTx = await dappToken.transferOwnership(
     await tokenFarm.getAddress()
   );
   await transferTx.wait();
-  console.log("🔑 Ownership de DAppToken transferido a TokenFarm");
-
-  console.log("🚀 Despliegue completo");
+  console.log("Propiedad de DAppToken transferida a TokenFarm.");
 }
 
-main().catch((err) => {
-  console.error("❌ Error al desplegar contratos:", err);
-  process.exit(1);
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
 });
