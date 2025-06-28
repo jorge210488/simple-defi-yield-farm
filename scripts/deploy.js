@@ -1,18 +1,21 @@
+require("dotenv").config();
 const { ethers } = require("hardhat");
 
 async function main() {
   const [deployer] = await ethers.getSigners();
-  console.log("Desplegando contratos con la cuenta:", deployer.address);
-
-  const DAppToken = await ethers.getContractFactory("DAppToken");
-  const dappToken = await DAppToken.deploy(deployer.address);
-  console.log("DAppToken desplegado en:", await dappToken.getAddress());
+  console.log("Desplegando con:", deployer.address);
 
   const LPToken = await ethers.getContractFactory("LPToken");
   const lpToken = await LPToken.deploy(deployer.address);
-  console.log("LPToken desplegado en:", await lpToken.getAddress());
+  await lpToken.waitForDeployment();
+  console.log("LPToken en:", await lpToken.getAddress());
 
-  const initialRate = ethers.parseUnits("1", 18); // ← parseUnits nativo de viem o hardhat@6
+  const DAppToken = await ethers.getContractFactory("DAppToken");
+  const dappToken = await DAppToken.deploy(deployer.address); // temporalmente owner = deployer
+  await dappToken.waitForDeployment();
+  console.log("DAppToken en:", await dappToken.getAddress());
+
+  const initialRate = ethers.parseUnits("1", 18);
 
   const TokenFarm = await ethers.getContractFactory("TokenFarm");
   const tokenFarm = await TokenFarm.deploy(
@@ -20,16 +23,20 @@ async function main() {
     await lpToken.getAddress(),
     initialRate
   );
-  console.log("TokenFarm desplegado en:", await tokenFarm.getAddress());
+  await tokenFarm.waitForDeployment();
+  console.log("TokenFarm en:", await tokenFarm.getAddress());
 
-  const transferTx = await dappToken.transferOwnership(
-    await tokenFarm.getAddress()
-  );
-  await transferTx.wait();
-  console.log("Propiedad de DAppToken transferida a TokenFarm.");
+  // Transferimos propiedad del DAppToken al TokenFarm
+  const tx = await dappToken.transferOwnership(await tokenFarm.getAddress());
+  await tx.wait();
+  console.log("DAppToken ahora pertenece a TokenFarm");
+
+  console.log("✅ Deploy completo");
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error("❌ Error en el deploy:", error);
+    process.exit(1);
+  });
