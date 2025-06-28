@@ -15,7 +15,7 @@ async function main() {
   await dappToken.waitForDeployment();
   console.log("DAppToken en:", await dappToken.getAddress());
 
-  const initialRate = ethers.parseUnits("1", 18);
+  const initialRate = ethers.parseUnits("1", 18); // 1 LP serán 18 DAPP inicialmente
 
   const TokenFarm = await ethers.getContractFactory("TokenFarm");
   const tokenFarm = await TokenFarm.deploy(
